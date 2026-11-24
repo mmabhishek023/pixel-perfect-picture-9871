@@ -28,3 +28,7 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## Project decisions
+
+- Keep the demo data, authentication simulation, and API contract adapters in the shared client service/context layer so every screen uses one consistent browser-persisted state.
