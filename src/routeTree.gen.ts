@@ -10,15 +10,24 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as ScanRouteImport } from './routes/scan'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as DevicesIdRouteImport } from './routes/devices.$id'
 import { Route as DevicesNewRouteImport } from './routes/devices.new'
+import { Route as PTokenRouteImport } from './routes/p.$token'
+import { Route as DevicesIdQrRouteImport } from './routes/devices.$id.qr'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -29,6 +38,11 @@ const LoginRoute = LoginRouteImport.update({
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ScanRoute = ScanRouteImport.update({
+  id: '/scan',
+  path: '/scan',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SignupRoute = SignupRouteImport.update({
@@ -46,55 +60,103 @@ const DevicesNewRoute = DevicesNewRouteImport.update({
   path: '/devices/new',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PTokenRoute = PTokenRouteImport.update({
+  id: '/p/$token',
+  path: '/p/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DevicesIdQrRoute = DevicesIdQrRouteImport.update({
+  id: '/qr',
+  path: '/qr',
+  getParentRoute: () => DevicesIdRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
+  '/scan': typeof ScanRoute
   '/signup': typeof SignupRoute
-  '/devices/$id': typeof DevicesIdRoute
+  '/devices/$id': typeof DevicesIdRouteWithChildren
   '/devices/new': typeof DevicesNewRoute
+  '/p/$token': typeof PTokenRoute
+  '/devices/$id/qr': typeof DevicesIdQrRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
+  '/scan': typeof ScanRoute
   '/signup': typeof SignupRoute
-  '/devices/$id': typeof DevicesIdRoute
+  '/devices/$id': typeof DevicesIdRouteWithChildren
   '/devices/new': typeof DevicesNewRoute
+  '/p/$token': typeof PTokenRoute
+  '/devices/$id/qr': typeof DevicesIdQrRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
+  '/scan': typeof ScanRoute
   '/signup': typeof SignupRoute
-  '/devices/$id': typeof DevicesIdRoute
+  '/devices/$id': typeof DevicesIdRouteWithChildren
   '/devices/new': typeof DevicesNewRoute
+  '/p/$token': typeof PTokenRoute
+  '/devices/$id/qr': typeof DevicesIdQrRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/login' | '/profile' | '/signup' | '/devices/$id' | '/devices/new'
-  fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/profile' | '/signup' | '/devices/$id' | '/devices/new'
-  id:
-    | '__root__'
     | '/'
+    | '/admin'
     | '/login'
     | '/profile'
+    | '/scan'
     | '/signup'
     | '/devices/$id'
     | '/devices/new'
+    | '/p/$token'
+    | '/devices/$id/qr'
+  fileRoutesByTo: FileRoutesByTo
+  to:
+    | '/'
+    | '/admin'
+    | '/login'
+    | '/profile'
+    | '/scan'
+    | '/signup'
+    | '/devices/$id'
+    | '/devices/new'
+    | '/p/$token'
+    | '/devices/$id/qr'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/login'
+    | '/profile'
+    | '/scan'
+    | '/signup'
+    | '/devices/$id'
+    | '/devices/new'
+    | '/p/$token'
+    | '/devices/$id/qr'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
   LoginRoute: typeof LoginRoute
   ProfileRoute: typeof ProfileRoute
+  ScanRoute: typeof ScanRoute
   SignupRoute: typeof SignupRoute
-  DevicesIdRoute: typeof DevicesIdRoute
+  DevicesIdRoute: typeof DevicesIdRouteWithChildren
   DevicesNewRoute: typeof DevicesNewRoute
+  PTokenRoute: typeof PTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -104,6 +166,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -118,6 +187,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/scan': {
+      id: '/scan'
+      path: '/scan'
+      fullPath: '/scan'
+      preLoaderRoute: typeof ScanRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/signup': {
@@ -141,16 +217,45 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DevicesNewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/p/$token': {
+      id: '/p/$token'
+      path: '/p/$token'
+      fullPath: '/p/$token'
+      preLoaderRoute: typeof PTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/devices/$id/qr': {
+      id: '/devices/$id/qr'
+      path: '/qr'
+      fullPath: '/devices/$id/qr'
+      preLoaderRoute: typeof DevicesIdQrRouteImport
+      parentRoute: typeof DevicesIdRoute
+    }
   }
 }
 
+interface DevicesIdRouteChildren {
+  DevicesIdQrRoute: typeof DevicesIdQrRoute
+}
+
+const DevicesIdRouteChildren: DevicesIdRouteChildren = {
+  DevicesIdQrRoute: DevicesIdQrRoute,
+}
+
+const DevicesIdRouteWithChildren = DevicesIdRoute._addFileChildren(
+  DevicesIdRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
   LoginRoute: LoginRoute,
   ProfileRoute: ProfileRoute,
+  ScanRoute: ScanRoute,
   SignupRoute: SignupRoute,
-  DevicesIdRoute: DevicesIdRoute,
+  DevicesIdRoute: DevicesIdRouteWithChildren,
   DevicesNewRoute: DevicesNewRoute,
+  PTokenRoute: PTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

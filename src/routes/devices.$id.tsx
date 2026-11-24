@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useApp, useAppApi } from "@/context/AppContext";
-import type { ComponentCondition, ComponentInput, ComponentOrigin, ComponentType, DeviceStatus, RepairInput } from "@/types/passport";
+import type { ComponentCondition, ComponentInput, ComponentOrigin, ComponentType, DevicePassport, DeviceStatus, RepairInput } from "@/types/passport";
 import { calculateAssessment } from "@/utils/scoringEngine";
 
 export const Route = createFileRoute("/devices/$id")({
