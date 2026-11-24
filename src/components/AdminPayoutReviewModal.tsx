@@ -190,44 +190,45 @@ export function AdminPayoutReviewModal({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-2xl">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="size-5 text-primary" />
-            Admin Review: Trade-In Payout & Marketplace Listing
+      <DialogContent className="w-[95vw] sm:w-full max-w-2xl max-h-[90dvh] flex flex-col overflow-hidden p-0">
+        <DialogHeader className="px-4 py-3 sm:px-6 sm:py-4 border-b shrink-0 text-left">
+          <DialogTitle className="flex items-center gap-2 text-base sm:text-lg font-bold">
+            <Sparkles className="size-5 text-primary shrink-0" />
+            Admin Review: Payout & Listing
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-xs sm:text-sm">
             Verify technician repair work, approve owner trade-in payout, and configure public marketplace pricing.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-5 pt-1">
-          {/* Section 1: Device & Health Summary */}
-          <section className="rounded-md border border-border bg-muted/20 p-4">
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
-              <div>
-                <h3 className="text-base font-semibold text-foreground">{device.name}</h3>
-                <p className="font-mono text-xs text-muted-foreground">{device.passportId} · {device.brand}</p>
+        <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0 overflow-hidden">
+          <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6 space-y-5">
+            {/* Section 1: Device & Health Summary */}
+            <section className="rounded-md border border-border bg-muted/20 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
+                <div>
+                  <h3 className="text-base font-semibold text-foreground">{device.name}</h3>
+                  <p className="font-mono text-xs text-muted-foreground">{device.passportId} · {device.brand}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <ScoreRing assessment={assessment} size="small" />
+                  <GradeBadge grade={assessment.grade} />
+                  <Badge
+                    variant="outline"
+                    className={
+                      isRefurbished
+                        ? "border-success/50 bg-success/10 text-success-foreground font-semibold"
+                        : "border-recycle/40 bg-recycle/10 text-recycle font-semibold"
+                    }
+                  >
+                    {device.internalStatus}
+                  </Badge>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <ScoreRing assessment={assessment} size="small" />
-                <GradeBadge grade={assessment.grade} />
-                <Badge
-                  variant="outline"
-                  className={
-                    isRefurbished
-                      ? "border-success/50 bg-success/10 text-success-foreground font-semibold"
-                      : "border-recycle/40 bg-recycle/10 text-recycle font-semibold"
-                  }
-                >
-                  {device.internalStatus}
-                </Badge>
-              </div>
-            </div>
 
-            <div className="mt-3 grid gap-3 sm:grid-cols-3 text-xs">
-              <div>
-                <span className="text-muted-foreground">Specifications:</span>
+              <div className="mt-3 grid gap-3 sm:grid-cols-3 text-xs">
+                <div>
+                  <span className="text-muted-foreground">Specifications:</span>
                 <p className="font-medium mt-0.5">{device.ramGb ?? "—"}GB RAM · {device.storageGb ?? "—"}GB · {device.os || "OS"}</p>
               </div>
               <div>
@@ -323,7 +324,7 @@ export function AdminPayoutReviewModal({
                   step="1"
                   value={payoutInput}
                   onChange={(e) => handlePayoutChange(e.target.value)}
-                  className="pl-7 text-sm font-bold tabular-nums"
+                  className="pl-7 text-base sm:text-sm font-bold tabular-nums"
                   required
                 />
               </div>
@@ -370,7 +371,7 @@ export function AdminPayoutReviewModal({
                           step="1"
                           value={sellingPriceInput}
                           onChange={(e) => handleSellingPriceChange(e.target.value)}
-                          className="pl-7 text-sm font-bold tabular-nums"
+                          className="pl-7 text-base sm:text-sm font-bold tabular-nums"
                           required
                         />
                       </div>
@@ -427,8 +428,9 @@ export function AdminPayoutReviewModal({
               {error}
             </div>
           )}
+          </div>
 
-          <DialogFooter className="gap-2 sm:gap-0">
+          <DialogFooter className="px-4 py-3 sm:px-6 sm:py-4 border-t bg-background shrink-0 gap-2 sm:gap-0">
             <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
               Cancel
             </Button>

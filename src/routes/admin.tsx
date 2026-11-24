@@ -345,7 +345,7 @@ function AdminConsole() {
         </div>
         {sortedPayoutDevices.length ? (
           <div>
-            <div className="overflow-x-auto">
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead className="border-b border-border bg-muted/50 text-[11px] font-semibold uppercase text-muted-foreground">
                   <tr>
@@ -430,18 +430,98 @@ function AdminConsole() {
                 </tbody>
               </table>
             </div>
+
+            {/* Mobile Card View for Trade-In Payouts */}
+            <div className="divide-y divide-border md:hidden">
+              {paginatedPayoutDevices.map((device) => {
+                const internalStatus = device.internalStatus || "PENDING_INSPECTION";
+                const payoutStatus = device.payoutStatus || "PENDING_INSPECTION";
+                return (
+                  <div key={device.id} className="p-4 space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <Link to="/devices/$id" params={{ id: device.id }} className="font-semibold text-sm hover:text-primary">
+                          {device.name}
+                        </Link>
+                        <p className="font-mono text-xs text-muted-foreground mt-0.5">{device.passportId}</p>
+                      </div>
+                      <Badge variant="outline" className={`text-xs font-medium shrink-0 ${getInternalStatusStyle(internalStatus)}`}>
+                        {internalStatus.replaceAll("_", " ")}
+                      </Badge>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <span className="text-muted-foreground">Owner: </span>
+                        <span className="font-medium text-foreground">{userNameById.get(device.ownerId) ?? device.ownerId}</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Payout: </span>
+                        <span className="font-bold text-foreground tabular-nums">
+                          {device.payoutAmount !== null && device.payoutAmount !== undefined
+                            ? `₹${device.payoutAmount.toLocaleString("en-IN")}`
+                            : "—"}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <Badge variant="outline" className={`text-xs font-medium ${getPayoutStatusStyle(payoutStatus)}`}>
+                        {payoutStatus.replaceAll("_", " ")}
+                      </Badge>
+                      {device.isListedForSale && (
+                        <Badge variant="outline" className="border-primary/50 bg-primary/10 text-primary text-[10px]">
+                          Listed (₹{(device.listingPrice ?? 0).toLocaleString("en-IN")})
+                        </Badge>
+                      )}
+                      {internalStatus === "REFURBISHED" && !device.isListedForSale && payoutStatus === "PAID" && (
+                        <span className="text-[10px] text-muted-foreground">Unlisted</span>
+                      )}
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-border">
+                      {payoutStatus === "PAYMENT_INITIATED" ? (
+                        <Button size="sm" className="h-8 gap-1.5 text-xs font-medium flex-1 min-w-[130px]" onClick={() => setReviewingDeviceId(device.id)}>
+                          <Check className="size-3.5" />Review & Approve
+                        </Button>
+                      ) : internalStatus === "REFURBISHED" && !device.isListedForSale ? (
+                        <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs font-medium flex-1 min-w-[120px]" onClick={() => setReviewingDeviceId(device.id)}>
+                          <Store className="size-3.5" />Manage Listing
+                        </Button>
+                      ) : (
+                        <Button size="sm" variant="ghost" className="h-8 text-xs flex-1" onClick={() => setReviewingDeviceId(device.id)}>
+                          View Details
+                        </Button>
+                      )}
+                      {(internalStatus === "REFURBISHED" || device.isListedForSale) && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-8 gap-1 text-xs shrink-0"
+                          onClick={() => setTransferDeviceId(device.id)}
+                        >
+                          <UserCheck className="size-3.5" />
+                          Transfer
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
             {sortedPayoutDevices.length > PAGE_SIZE && (
-              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border px-5 py-3 text-xs text-muted-foreground">
-                <div>
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-border px-4 py-3 sm:px-5 sm:py-3 text-xs text-muted-foreground">
+                <div className="text-center sm:text-left">
                   Showing <span className="font-medium text-foreground">{(safePayoutPage - 1) * PAGE_SIZE + 1}</span>–
                   <span className="font-medium text-foreground">{Math.min(safePayoutPage * PAGE_SIZE, sortedPayoutDevices.length)}</span> of{" "}
                   <span className="font-medium text-foreground">{sortedPayoutDevices.length}</span> devices
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex flex-wrap items-center justify-center gap-1">
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-8 px-2"
+                    className="h-8 px-2.5"
                     disabled={safePayoutPage <= 1}
                     onClick={() => setPayoutPage((p) => Math.max(1, p - 1))}
                   >
@@ -462,7 +542,7 @@ function AdminConsole() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-8 px-2"
+                    className="h-8 px-2.5"
                     disabled={safePayoutPage >= totalPayoutPages}
                     onClick={() => setPayoutPage((p) => Math.min(totalPayoutPages, p + 1))}
                   >
@@ -518,7 +598,7 @@ function AdminConsole() {
             All registered devices, inspection outcomes, marketplace status, payout tracking, and verified photos.
           </p>
         </div>
-        <div className="overflow-x-auto">
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead className="border-b border-border bg-muted/50 text-[11px] font-semibold uppercase text-muted-foreground">
               <tr>
@@ -607,6 +687,70 @@ function AdminConsole() {
               })}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile Card View for Platform Devices & Listings */}
+        <div className="divide-y divide-border md:hidden">
+          {devices.map((device) => {
+            const internalStatus = device.internalStatus || "PENDING_INSPECTION";
+            const payoutStatus = device.payoutStatus || "PENDING_INSPECTION";
+            const ownerPhotos = device.ownerPhotos ?? [];
+            const listingPhotos = device.listingPhotos ?? [];
+
+            return (
+              <div key={device.id} className="p-4 space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <Link to="/devices/$id" params={{ id: device.id }} className="font-semibold text-sm hover:text-primary">
+                      {device.name}
+                    </Link>
+                    <p className="font-mono text-xs text-muted-foreground mt-0.5">{device.passportId}</p>
+                  </div>
+                  <Badge variant="outline" className={`text-xs font-medium shrink-0 ${getInternalStatusStyle(internalStatus)}`}>
+                    {internalStatus.replaceAll("_", " ")}
+                  </Badge>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <Badge variant="outline" className={`text-xs font-medium ${getPayoutStatusStyle(payoutStatus)}`}>
+                    {payoutStatus.replaceAll("_", " ")}
+                  </Badge>
+                  {device.isListedForSale ? (
+                    <Badge variant="outline" className="gap-1 border-primary/50 bg-primary/10 text-primary text-[10px]">
+                      <Store className="size-3" />
+                      Listed (₹{(device.listingPrice ?? 0).toLocaleString("en-IN")})
+                    </Badge>
+                  ) : internalStatus === "REFURBISHED" ? (
+                    <Badge variant="outline" className="border-border bg-muted text-muted-foreground text-[10px]">
+                      Ready to List
+                    </Badge>
+                  ) : null}
+                </div>
+
+                <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
+                  <span>Owner: {ownerPhotos.length} photos</span>
+                  <span>Listing: {listingPhotos.length} photos</span>
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
+                  {(device.internalStatus === "REFURBISHED" || device.isListedForSale) && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-8 gap-1 text-xs"
+                      onClick={() => setTransferDeviceId(device.id)}
+                    >
+                      <UserCheck className="size-3.5" />
+                      Transfer to Buyer
+                    </Button>
+                  )}
+                  <Link to="/devices/$id" params={{ id: device.id }} className="inline-flex items-center gap-1 text-xs font-semibold text-primary px-2 py-1">
+                    View Passport <ArrowRight className="size-3.5" />
+                  </Link>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </section>
 

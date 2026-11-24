@@ -43,21 +43,23 @@ function QrPage() {
 
   return <AppShell title="QR label" subtitle="A scannable link to this device's limited public passport." actions={<Link to="/devices/$id" params={{ id: device.id }}><Button variant="outline"><ArrowLeft className="size-4" />Back to passport</Button></Link>}>
     <div className="grid max-w-4xl gap-6 lg:grid-cols-[1fr_1fr]">
-      <section className="grid place-items-center rounded-md border border-border bg-card p-7 sm:p-10">
-        <div className="flex flex-col items-center text-center">
+      <section className="grid place-items-center rounded-md border border-border bg-card p-5 sm:p-10">
+        <div className="flex flex-col items-center text-center max-w-full">
           <div className="flex items-center gap-2 text-sm font-bold"><span className="grid size-8 place-items-center rounded-md bg-primary text-primary-foreground"><Smartphone className="size-4" /></span>RETECH PASSPORT</div>
-          <div id="passport-qr" className="mt-6 rounded-md border border-border bg-card p-3">{url && <QRCodeCanvas value={url} size={240} level="M" includeMargin />}</div>
-          <p className="mt-5 font-mono text-sm font-semibold">{device.passportId}</p>
-          <p className="mt-1 text-sm text-muted-foreground">{device.model}</p>
+          <div id="passport-qr" className="mt-5 rounded-md border border-border bg-card p-2 sm:p-3 flex justify-center max-w-full overflow-hidden">
+            {url && <QRCodeCanvas value={url} size={200} level="M" includeMargin className="max-w-full h-auto" />}
+          </div>
+          <p className="mt-4 font-mono text-sm font-semibold truncate max-w-full">{device.passportId}</p>
+          <p className="mt-1 text-sm text-muted-foreground truncate max-w-full">{device.model}</p>
         </div>
       </section>
-      <section className="flex flex-col justify-center rounded-md border border-border bg-card p-6 sm:p-8">
+      <section className="flex flex-col justify-center rounded-md border border-border bg-card p-5 sm:p-8">
         <h2 className="text-lg font-semibold">Passport label</h2>
         <p className="mt-2 break-all rounded-sm bg-muted px-3 py-2 font-mono text-xs text-muted-foreground">{url || "Preparing public link…"}</p>
-        <div className="mt-5 grid gap-2 sm:grid-cols-2">
-          <Button onClick={download}><Download className="size-4" />Download PNG</Button>
-          <Button variant="outline" onClick={() => void copyLink()}><Copy className="size-4" />Copy public link</Button>
-          <Button variant="outline" className="sm:col-span-2" onClick={() => window.print()}><Printer className="size-4" />Print sticker label</Button>
+        <div className="mt-5 grid gap-2.5 sm:grid-cols-2">
+          <Button className="min-h-[44px]" onClick={download}><Download className="size-4" />Download PNG</Button>
+          <Button variant="outline" className="min-h-[44px]" onClick={() => void copyLink()}><Copy className="size-4" />Copy public link</Button>
+          <Button variant="outline" className="min-h-[44px] sm:col-span-2" onClick={() => window.print()}><Printer className="size-4" />Print sticker label</Button>
         </div>
         {message && <p role="status" className="mt-4 text-sm text-primary">{message}</p>}
       </section>

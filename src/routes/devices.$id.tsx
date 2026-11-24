@@ -177,11 +177,11 @@ function DeviceDetail() {
       {(error || message) && <p role={error ? "alert" : "status"} className={`mb-5 rounded-md border px-3 py-2 text-sm ${error ? "border-destructive/30 bg-destructive/5 text-destructive" : "border-success/40 bg-success text-success-foreground"}`}>{error || message}</p>}
 
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="h-11 w-full justify-start overflow-x-auto rounded-md bg-transparent p-0 sm:w-auto">
-          <TabsTrigger value="overview" className="h-10 rounded-none border-b-2 border-transparent px-4 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none">Overview</TabsTrigger>
-          <TabsTrigger value="components" className="h-10 rounded-none border-b-2 border-transparent px-4 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none">Components <span className="ml-1 text-xs text-muted-foreground">{device.components.length}</span></TabsTrigger>
-          <TabsTrigger value="repairs" className="h-10 rounded-none border-b-2 border-transparent px-4 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none">Repairs <span className="ml-1 text-xs text-muted-foreground">{device.repairs.length}</span></TabsTrigger>
-          <TabsTrigger value="health" className="h-10 rounded-none border-b-2 border-transparent px-4 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none">Health report</TabsTrigger>
+        <TabsList className="h-11 w-full justify-start overflow-x-auto whitespace-nowrap rounded-md bg-transparent p-0 no-scrollbar border-b border-border sm:w-auto">
+          <TabsTrigger value="overview" className="h-10 shrink-0 rounded-none border-b-2 border-transparent px-4 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none">Overview</TabsTrigger>
+          <TabsTrigger value="components" className="h-10 shrink-0 rounded-none border-b-2 border-transparent px-4 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none">Components <span className="ml-1 text-xs text-muted-foreground">{device.components.length}</span></TabsTrigger>
+          <TabsTrigger value="repairs" className="h-10 shrink-0 rounded-none border-b-2 border-transparent px-4 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none">Repairs <span className="ml-1 text-xs text-muted-foreground">{device.repairs.length}</span></TabsTrigger>
+          <TabsTrigger value="health" className="h-10 shrink-0 rounded-none border-b-2 border-transparent px-4 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none">Health report</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-6">
@@ -376,13 +376,13 @@ function DeviceDetail() {
       )}
 
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
           <DialogHeader><DialogTitle>Edit specifications</DialogTitle><DialogDescription>Updates are appended to the passport audit trail.</DialogDescription></DialogHeader>
           <form onSubmit={saveSpecs} className="grid gap-4">
-            <label className="grid gap-1.5 text-sm font-medium">Operating system<Input value={editForm.os} onChange={(event) => setEditForm((previous) => ({ ...previous, os: event.target.value }))} /></label>
-            <div className="grid grid-cols-2 gap-3"><label className="grid gap-1.5 text-sm font-medium">RAM (GB)<Input type="number" min="0" value={editForm.ramGb ?? ""} onChange={(event) => setEditForm((previous) => ({ ...previous, ramGb: event.target.value ? Number(event.target.value) : null }))} /></label><label className="grid gap-1.5 text-sm font-medium">Storage (GB)<Input type="number" min="0" value={editForm.storageGb ?? ""} onChange={(event) => setEditForm((previous) => ({ ...previous, storageGb: event.target.value ? Number(event.target.value) : null }))} /></label></div>
-            <label className="grid gap-1.5 text-sm font-medium">Processor<Input value={editForm.processor} onChange={(event) => setEditForm((previous) => ({ ...previous, processor: event.target.value }))} /></label>
-            <DialogFooter><Button type="button" variant="outline" onClick={() => setEditOpen(false)}>Cancel</Button><Button type="submit">Save changes</Button></DialogFooter>
+            <label className="grid gap-1.5 text-sm font-medium">Operating system<Input value={editForm.os} onChange={(event) => setEditForm((previous) => ({ ...previous, os: event.target.value }))} className="text-base sm:text-sm" /></label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3"><label className="grid gap-1.5 text-sm font-medium">RAM (GB)<Input type="number" min="0" value={editForm.ramGb ?? ""} onChange={(event) => setEditForm((previous) => ({ ...previous, ramGb: event.target.value ? Number(event.target.value) : null }))} className="text-base sm:text-sm" /></label><label className="grid gap-1.5 text-sm font-medium">Storage (GB)<Input type="number" min="0" value={editForm.storageGb ?? ""} onChange={(event) => setEditForm((previous) => ({ ...previous, storageGb: event.target.value ? Number(event.target.value) : null }))} className="text-base sm:text-sm" /></label></div>
+            <label className="grid gap-1.5 text-sm font-medium">Processor<Input value={editForm.processor} onChange={(event) => setEditForm((previous) => ({ ...previous, processor: event.target.value }))} className="text-base sm:text-sm" /></label>
+            <DialogFooter className="gap-2 sm:gap-0"><Button type="button" variant="outline" onClick={() => setEditOpen(false)}>Cancel</Button><Button type="submit">Save changes</Button></DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
@@ -683,8 +683,8 @@ function AddRepairDialog({ open, onOpenChange, device, onError, onMessage }: { o
           <span>Your technician account is pending Admin approval. This repair record will be logged as unverified until approved.</span>
         </div>
       )}
-      <label className="grid gap-1.5 text-sm font-medium">Repair description<Input value={description} onChange={(event) => setDescription(event.target.value)} placeholder="e.g. Battery replaced" required /></label>
-      <div className="grid grid-cols-2 gap-3"><label className="grid gap-1.5 text-sm font-medium">Date<Input type="date" value={date} onChange={(event) => setDate(event.target.value)} required /></label><label className="grid gap-1.5 text-sm font-medium">Cost (INR)<Input type="number" min="0" step="1" value={cost} onChange={(event) => setCost(event.target.value)} /></label></div>
+      <label className="grid gap-1.5 text-sm font-medium">Repair description<Input value={description} onChange={(event) => setDescription(event.target.value)} placeholder="e.g. Battery replaced" required className="text-base sm:text-sm" /></label>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3"><label className="grid gap-1.5 text-sm font-medium">Date<Input type="date" value={date} onChange={(event) => setDate(event.target.value)} required className="text-base sm:text-sm" /></label><label className="grid gap-1.5 text-sm font-medium">Cost (INR)<Input type="number" min="0" step="1" value={cost} onChange={(event) => setCost(event.target.value)} className="text-base sm:text-sm" /></label></div>
       <label className="grid gap-1.5 text-sm font-medium">Affected components <span className="text-xs font-normal text-muted-foreground">Selected parts are replaced and retained in the history.</span></label>
       <div className="grid max-h-36 gap-2 overflow-y-auto rounded-md border border-border p-3 sm:grid-cols-2">{device.components.filter((item) => item.active).map((item) => <label key={item.id} className="flex items-center gap-2 text-sm"><input type="checkbox" className="size-4 accent-primary" checked={affected.includes(item.id)} onChange={(event) => setAffected((previous) => event.target.checked ? [...previous, item.id] : previous.filter((id) => id !== item.id))} />{displayName(item.type)}<span className="text-xs text-muted-foreground">{item.condition}</span></label>)}</div>
       <label className="grid gap-1.5 text-sm font-medium">Notes<Textarea rows={2} value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Service notes" /></label>

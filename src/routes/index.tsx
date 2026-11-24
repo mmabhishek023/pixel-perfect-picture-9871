@@ -285,19 +285,19 @@ function DeviceDashboard() {
               Showing {filtered.length} {filtered.length === 1 ? "device" : "devices"}
             </p>
           </div>
-          <div className="flex w-full flex-wrap gap-2 sm:w-auto">
-            <div className="relative min-w-[210px] flex-1 sm:w-64 sm:flex-none">
+          <div className="grid w-full grid-cols-1 sm:grid-cols-2 lg:flex lg:w-auto gap-2">
+            <div className="relative w-full sm:col-span-2 lg:w-64">
               <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Search passport, model, serial"
-                className="pl-9"
+                className="pl-9 w-full text-base sm:text-sm"
                 aria-label="Search devices"
               />
             </div>
             <Select value={typeFilter} onValueChange={(value) => setTypeFilter(value as TypeFilter)}>
-              <SelectTrigger className="w-[132px] bg-card" aria-label="Filter device type">
+              <SelectTrigger className="w-full lg:w-[132px] bg-card text-base sm:text-sm" aria-label="Filter device type">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -307,7 +307,7 @@ function DeviceDashboard() {
               </SelectContent>
             </Select>
             <Select value={gradeFilter} onValueChange={(value) => setGradeFilter(value as GradeFilter)}>
-              <SelectTrigger className="w-[112px] bg-card" aria-label="Filter grade">
+              <SelectTrigger className="w-full lg:w-[112px] bg-card text-base sm:text-sm" aria-label="Filter grade">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -321,7 +321,7 @@ function DeviceDashboard() {
             </Select>
             {!isOwner && (
               <Select value={recommendationFilter} onValueChange={(value) => setRecommendationFilter(value as RecommendationFilter)}>
-                <SelectTrigger className="w-[142px] bg-card" aria-label="Filter recommendation">
+                <SelectTrigger className="w-full lg:w-[142px] bg-card text-base sm:text-sm" aria-label="Filter recommendation">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -693,27 +693,27 @@ function MobileDeviceCard({
         </span>
         {isTech ? (
           techTab === "QUEUE" ? (
-            <Button size="sm" className="h-7 gap-1 text-xs" onClick={() => onInspect?.(device.id)}>
-              <Wrench className="size-3" />
+            <Button size="sm" className="h-8 gap-1.5 text-xs font-medium" onClick={() => onInspect?.(device.id)}>
+              <Wrench className="size-3.5" />
               Inspect & Repair
             </Button>
           ) : device.internalStatus === "REFURBISHED" ? (
             <Button
               size="sm"
               variant={device.isListedForSale ? "outline" : "default"}
-              className="h-7 gap-1 text-xs"
+              className="h-8 gap-1.5 text-xs font-medium"
               onClick={() => onList?.(device.id)}
             >
-              <Store className="size-3" />
+              <Store className="size-3.5" />
               {device.isListedForSale ? "Edit Listing" : "List for Sale"}
             </Button>
           ) : (
-            <Link to="/devices/$id" params={{ id: device.id }} className="font-medium text-primary">
+            <Link to="/devices/$id" params={{ id: device.id }} className="font-medium text-primary py-1 px-2">
               View
             </Link>
           )
         ) : (
-          <Link to="/devices/$id" params={{ id: device.id }} className="inline-flex items-center gap-1 font-medium text-primary">
+          <Link to="/devices/$id" params={{ id: device.id }} className="inline-flex items-center gap-1 font-medium text-primary py-1 px-2">
             View <ArrowRight className="size-3.5" />
           </Link>
         )}
