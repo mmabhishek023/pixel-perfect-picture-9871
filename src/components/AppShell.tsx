@@ -1,4 +1,4 @@
-import { Link, useLocation } from "@tanstack/react-router";
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import {
   ArrowUpRight,
   ClipboardPlus,
@@ -7,6 +7,7 @@ import {
   ShieldCheck,
   Smartphone,
   UserRound,
+  Wrench,
   type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -25,16 +26,39 @@ interface NavigationItem {
   label: string;
   href: "/" | "/devices/new" | "/scan" | "/profile" | "/admin";
   icon: LucideIcon;
-  adminOnly?: boolean;
 }
 
-const navigation: NavigationItem[] = [
-  { label: "My Devices", href: "/", icon: Laptop },
-  { label: "Register Device", href: "/devices/new", icon: ClipboardPlus },
-  { label: "Scan / Lookup", href: "/scan", icon: ScanLine },
-  { label: "Admin Console", href: "/admin", icon: ShieldCheck, adminOnly: true },
-  { label: "Profile", href: "/profile", icon: UserRound },
-];
+function getNavigationForRole(role?: UserRole): NavigationItem[] {
+  switch (role) {
+    case "TECHNICIAN":
+      return [
+        { label: "Repair Queue", href: "/", icon: Wrench },
+        { label: "Scan / Lookup", href: "/scan", icon: ScanLine },
+        { label: "Profile", href: "/profile", icon: UserRound },
+      ];
+    case "VIEWER":
+      return [
+        { label: "Browse Passports", href: "/", icon: Laptop },
+        { label: "Scan / Lookup", href: "/scan", icon: ScanLine },
+        { label: "Profile", href: "/profile", icon: UserRound },
+      ];
+    case "ADMIN":
+      return [
+        { label: "Admin Console", href: "/admin", icon: ShieldCheck },
+        { label: "All Passports", href: "/", icon: Laptop },
+        { label: "Scan / Lookup", href: "/scan", icon: ScanLine },
+        { label: "Profile", href: "/profile", icon: UserRound },
+      ];
+    case "OWNER":
+    default:
+      return [
+        { label: "My Devices", href: "/", icon: Laptop },
+        { label: "Register Device", href: "/devices/new", icon: ClipboardPlus },
+        { label: "Scan / Lookup", href: "/scan", icon: ScanLine },
+        { label: "Profile", href: "/profile", icon: UserRound },
+      ];
+  }
+}
 
 function isActive(path: string, href: NavigationItem["href"]) {
   if (href === "/") return path === "/";
@@ -59,11 +83,12 @@ function NavLink({ item, mobile = false }: { item: NavigationItem; mobile?: bool
 export function AppShell({ title, subtitle, children, actions }: AppShellProps) {
   const { currentUser, switchRole, logout } = useApp();
   const location = useLocation();
+  const navigate = useNavigate();
   const isPublic = location.pathname.startsWith("/p/") || location.pathname === "/login" || location.pathname === "/signup";
   if (isPublic) return <>{children}</>;
 
-  const visibleNavigation = navigation.filter((item) => !item.adminOnly || currentUser?.role === "ADMIN");
-  const mobileNavigation = visibleNavigation.filter((item) => ["My Devices", "Scan / Lookup", "Profile", "Admin Console"].includes(item.label));
+  const visibleNavigation = getNavigationForRole(currentUser?.role);
+  const mobileNavigation = visibleNavigation;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -103,7 +128,18 @@ export function AppShell({ title, subtitle, children, actions }: AppShellProps) 
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
             <span className="hidden text-xs font-medium text-muted-foreground sm:inline">Demo role</span>
-            <Select value={currentUser?.role ?? ""} onValueChange={(value) => switchRole(value as UserRole)}>
+            <Select
+              value={currentUser?.role ?? "OWNER"}
+              onValueChange={(value) => {
+                const newRole = value as UserRole;
+                switchRole(newRole);
+                if (newRole === "ADMIN") {
+                  void navigate({ to: "/admin" });
+                } else {
+                  void navigate({ to: "/" });
+                }
+              }}
+            >
               <SelectTrigger className="h-9 w-[138px] bg-card text-xs sm:w-[158px]" aria-label="Demo role switcher"><SelectValue placeholder="Select role" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="OWNER">Owner · Aarav</SelectItem>

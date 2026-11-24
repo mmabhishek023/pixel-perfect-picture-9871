@@ -39,6 +39,11 @@ interface AppContextValue {
   amendRepair: (deviceId: string, repairId: string, note: string) => void;
   approveTechnician: (id: string) => void;
   rejectTechnician: (id: string) => void;
+  completeInspection: (deviceId: string, payload: Parameters<typeof api.completeInspection>[2]) => DevicePassport;
+  listDeviceForSale: (deviceId: string, payload: Parameters<typeof api.listDeviceForSale>[2]) => DevicePassport;
+  unlistDevice: (deviceId: string) => DevicePassport;
+  markAsPaid: (deviceId: string) => DevicePassport;
+  adminApprovePayoutAndListing: (deviceId: string, payload: Parameters<typeof api.adminApprovePayoutAndListing>[2]) => DevicePassport;
   getDevice: (id: string) => DevicePassport | null;
   getPublicPassport: (token: string) => DevicePassport | null;
   getQr: (id: string) => string | null;
@@ -113,6 +118,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const rejectTechnician = useCallback((id: string) => {
     transact((previous) => api.rejectTechnician(previous, id));
   }, [transact]);
+  const completeInspection = useCallback((deviceId: string, payload: Parameters<typeof api.completeInspection>[2]) => {
+    return transact((previous) => api.completeInspection(previous, deviceId, payload));
+  }, [transact]);
+  const listDeviceForSale = useCallback((deviceId: string, payload: Parameters<typeof api.listDeviceForSale>[2]) => {
+    return transact((previous) => api.listDeviceForSale(previous, deviceId, payload));
+  }, [transact]);
+  const unlistDevice = useCallback((deviceId: string) => {
+    return transact((previous) => api.unlistDevice(previous, deviceId));
+  }, [transact]);
+  const markAsPaid = useCallback((deviceId: string) => {
+    return transact((previous) => api.markAsPaid(previous, deviceId));
+  }, [transact]);
+  const adminApprovePayoutAndListing = useCallback((deviceId: string, payload: Parameters<typeof api.adminApprovePayoutAndListing>[2]) => {
+    return transact((previous) => api.adminApprovePayoutAndListing(previous, deviceId, payload));
+  }, [transact]);
   const getDevice = useCallback((id: string) => api.getDevice(stateRef.current, id), []);
   const getPublicPassport = useCallback((token: string) => api.getPublicPassport(stateRef.current, token), []);
   const getQr = useCallback((id: string) => api.getQr(stateRef.current, id), []);
@@ -136,11 +156,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
     amendRepair,
     approveTechnician,
     rejectTechnician,
+    completeInspection,
+    listDeviceForSale,
+    unlistDevice,
+    markAsPaid,
+    adminApprovePayoutAndListing,
     getDevice,
     getPublicPassport,
     getQr,
     getAssessment,
-  }), [state, currentUser, devices, demoLogin, login, signup, logout, switchRole, resetDemo, registerDevice, updateDevice, transferDevice, addComponent, addRepair, amendRepair, approveTechnician, rejectTechnician, getDevice, getPublicPassport, getQr, getAssessment]);
+  }), [state, currentUser, devices, demoLogin, login, signup, logout, switchRole, resetDemo, registerDevice, updateDevice, transferDevice, addComponent, addRepair, amendRepair, approveTechnician, rejectTechnician, completeInspection, listDeviceForSale, unlistDevice, markAsPaid, adminApprovePayoutAndListing, getDevice, getPublicPassport, getQr, getAssessment]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }

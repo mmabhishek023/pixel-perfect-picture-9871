@@ -1,4 +1,6 @@
 export type UserRole = "OWNER" | "TECHNICIAN" | "VIEWER" | "ADMIN";
+export type DeviceInternalStatus = 'PENDING_INSPECTION' | 'REFURBISHED' | 'RECYCLED';
+export type DevicePayoutStatus = 'PENDING_INSPECTION' | 'PAYMENT_INITIATED' | 'PAID';
 export type AccountStatus = "ACTIVE" | "PENDING" | "REJECTED";
 export type DeviceType = "SMARTPHONE" | "LAPTOP";
 export type DeviceStatus =
@@ -81,13 +83,29 @@ export interface DevicePassport {
   ramGb: number | null;
   storageGb: number | null;
   processor: string;
+  previousOwnersCount?: number;
+  knownDamages?: string[];
+  damageNotes?: string;
+  priorHistory?: string;
   status: DeviceStatus;
+  internalStatus: DeviceInternalStatus;
+  payoutStatus: DevicePayoutStatus;
+  payoutAmount: number | null;
+  ownerPhotos: string[];
+  listingPhotos: string[];
+  activeDamages: string[];
+  resolvedDamages: string[];
+  isListedForSale: boolean;
+  listingPrice: number | null;
+  listingCondition: string | null;
+  listingNotes: string | null;
   ownerId: string;
   qrToken: string;
   components: DeviceComponent[];
   repairs: RepairRecord[];
   audit: AuditEntry[];
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface AppState {
@@ -102,6 +120,8 @@ export interface AssessmentDeductions {
   battery: number;
   components: number;
   critical: number;
+  damages: number;
+  previousOwners: number;
 }
 
 export interface DeviceAssessment {
@@ -125,6 +145,11 @@ export interface DeviceInput {
   ramGb: number | null;
   storageGb: number | null;
   processor: string;
+  previousOwnersCount?: number;
+  knownDamages?: string[];
+  damageNotes?: string;
+  priorHistory?: string;
+  ownerPhotos?: string[];
 }
 
 export interface ComponentInput {
@@ -142,4 +167,11 @@ export interface RepairInput {
   affectedComponentIds: string[];
   notes: string;
   verified: boolean;
+}
+
+export interface ListingInput {
+  price: number;
+  condition: string;
+  notes: string;
+  listingPhotos?: string[];
 }

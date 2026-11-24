@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: retech-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: retechdb
+      POSTGRES_USER: ${DB_USER:-retech}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-retech123}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-retech} -d ${POSTGRES_DB:-retechdb}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ai-service:
+    build:
+      context: ./ai-service
+      dockerfile: Dockerfile
+    container_name: retech-ai-vision
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./storage/uploads:/app/storage/uploads
+      - ./ai-service/models:/app/models
+    environment:
+      - PORT=8000
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: retech-backend
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/retechdb
+      DB_USER: ${DB_USER:-retech}
+      DB_PASSWORD: ${DB_PASSWORD:-retech123}
+      JWT_SECRET: ${JWT_SECRET:-cmV0ZWNoUGFzc3BvcnRTdXBlclNlY3JldEtleTIwMjZYWVphYmMhQEAjJCVeJioo}
+      RETECH_BASE_URL: ${RETECH_BASE_URL:-http://localhost:5173}
+      AI_SERVICE_URL: http://ai-service:8000
+      STORAGE_UPLOAD_DIR: /app/storage/uploads
+      STORAGE_QR_DIR: /app/storage/qr
+      MAIL_HOST: ${MAIL_HOST:-}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+    volumes:
+      - ./storage/uploads:/app/storage/uploads
+      - ./storage/qr:/app/storage/qr
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ai-service:
+        condition: service_started
+
+volumes:
+  postgres-data:
+    driver: local

@@ -6,7 +6,7 @@ import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { useApp } from "@/context/AppContext";
 
-export const Route = createFileRoute("/devices/$id/qr")({
+export const Route = createFileRoute("/devices/$id_/qr")({
   component: QrPage,
   head: () => ({ meta: [
     { title: "QR Label · ReTech Passport" },

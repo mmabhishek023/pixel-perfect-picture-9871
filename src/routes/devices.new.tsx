@@ -1,10 +1,11 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Laptop, Smartphone } from "lucide-react";
+import { ArrowLeft, Camera, History, Laptop, Smartphone, Upload, X } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { useApp } from "@/context/AppContext";
 import type { DeviceInput, DeviceType } from "@/types/passport";
 
@@ -12,16 +13,38 @@ export const Route = createFileRoute("/devices/new")({
   component: RegisterDevice,
   head: () => ({ meta: [
     { title: "Register Device · ReTech Passport" },
-    { name: "description", content: "Create a new electronic device passport with its core specifications." },
+    { name: "description", content: "Create a new electronic device passport with its core specifications and condition history." },
     { property: "og:title", content: "Register Device · ReTech Passport" },
-    { property: "og:description", content: "Create a new electronic device passport with its core specifications." },
+    { property: "og:description", content: "Create a new electronic device passport with its core specifications and condition history." },
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary_large_image" },
   ] }),
 });
 
+const KNOWN_DAMAGE_OPTIONS = [
+  "Screen Crack",
+  "Battery Swelling/Drain",
+  "Water/Liquid Damage",
+  "Body Dents/Scratches",
+  "Port/Charging Issue",
+  "Camera/Speaker Fault",
+] as const;
+
 const emptyInput: DeviceInput = {
-  deviceType: "LAPTOP", brand: "", model: "", serial: "", purchaseDate: "", os: "", ramGb: null, storageGb: null, processor: "",
+  deviceType: "LAPTOP",
+  brand: "",
+  model: "",
+  serial: "",
+  purchaseDate: "",
+  os: "",
+  ramGb: null,
+  storageGb: null,
+  processor: "",
+  previousOwnersCount: 0,
+  knownDamages: [],
+  damageNotes: "",
+  priorHistory: "",
+  ownerPhotos: [],
 };
 
 function RegisterDevice() {
@@ -30,7 +53,49 @@ function RegisterDevice() {
   const [form, setForm] = useState<DeviceInput>(emptyInput);
   const [error, setError] = useState("");
   const canRegister = currentUser?.role === "OWNER" || (currentUser?.role === "TECHNICIAN" && currentUser.status === "ACTIVE");
-  const update = (key: keyof DeviceInput, value: string | number | null) => setForm((previous) => ({ ...previous, [key]: value }));
+
+  useEffect(() => {
+    if (currentUser?.role === "VIEWER") {
+      void navigate({ to: "/" });
+    }
+  }, [currentUser, navigate]);
+  const update = <K extends keyof DeviceInput>(key: K, value: DeviceInput[K]) =>
+    setForm((previous) => ({ ...previous, [key]: value }));
+
+  const toggleDamage = (damage: string) => {
+    const current = form.knownDamages ?? [];
+    const updated = current.includes(damage)
+      ? current.filter((d) => d !== damage)
+      : [...current, damage];
+    update("knownDamages", updated);
+  };
+
+  function handlePhotoUpload(event: ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(event.target.files ?? []);
+    if (!files.length) return;
+
+    files.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === "string") {
+          setForm((previous) => ({
+            ...previous,
+            ownerPhotos: [...(previous.ownerPhotos ?? []), reader.result as string],
+          }));
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+
+    event.target.value = "";
+  }
+
+  function removePhoto(index: number) {
+    setForm((previous) => ({
+      ...previous,
+      ownerPhotos: (previous.ownerPhotos ?? []).filter((_, i) => i !== index),
+    }));
+  }
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -52,8 +117,8 @@ function RegisterDevice() {
           {currentUser?.status === "PENDING" && <p className="mt-2 text-sm font-medium text-warning-foreground">Your technician account is awaiting approval.</p>}
         </div>
       ) : (
-        <form onSubmit={submit} className="max-w-4xl">
-          <div className="mb-6 flex flex-wrap gap-2" role="group" aria-label="Device type">
+        <form onSubmit={submit} className="max-w-4xl space-y-6">
+          <div className="flex flex-wrap gap-2" role="group" aria-label="Device type">
             {(["LAPTOP", "SMARTPHONE"] as const).map((type) => {
               const Icon = type === "LAPTOP" ? Laptop : Smartphone;
               const selected = form.deviceType === type;
@@ -74,12 +139,141 @@ function RegisterDevice() {
               <Field label="RAM (GB)"><Input type="number" min="0" value={form.ramGb ?? ""} onChange={(event) => update("ramGb", event.target.value ? Number(event.target.value) : null)} placeholder="8" /></Field>
               <Field label="Storage (GB)"><Input type="number" min="0" value={form.storageGb ?? ""} onChange={(event) => update("storageGb", event.target.value ? Number(event.target.value) : null)} placeholder="512" /></Field>
             </div>
-            {error && <p role="alert" className="mt-5 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2.5 text-sm font-medium text-destructive">{error}</p>}
-            <div className="mt-7 flex flex-wrap justify-end gap-2 border-t border-border pt-5">
-              <Link to="/"><Button type="button" variant="outline">Cancel</Button></Link>
-              <Button type="submit">Create passport</Button>
+          </section>
+
+          {/* Prior History & Condition Section */}
+          <section className="rounded-md border border-border bg-card p-5 sm:p-7">
+            <div className="flex items-center gap-2">
+              <History className="size-5 text-primary" />
+              <div>
+                <h2 className="text-base font-semibold">Prior History & Condition</h2>
+                <p className="mt-0.5 text-sm text-muted-foreground">Log known past ownership, existing defects, or prior repairs before issuing this passport.</p>
+              </div>
+            </div>
+
+            <div className="mt-6 grid gap-6">
+              {/* Previous Owners */}
+              <div className="max-w-xs">
+                <Field label="Number of previous owners">
+                  <Input
+                    type="number"
+                    min="0"
+                    value={form.previousOwnersCount ?? 0}
+                    onChange={(event) => update("previousOwnersCount", Math.max(0, parseInt(event.target.value) || 0))}
+                    placeholder="0 (first owner)"
+                  />
+                </Field>
+                <p className="mt-1 text-xs text-muted-foreground">Enter 0 if registering as the first / original owner.</p>
+              </div>
+
+              {/* Known Damages Checkboxes */}
+              <div>
+                <label className="text-sm font-medium">Existing / known damages</label>
+                <p className="text-xs text-muted-foreground mb-3">Select any visible physical or functional damages present on the device.</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {KNOWN_DAMAGE_OPTIONS.map((damage) => {
+                    const checked = (form.knownDamages ?? []).includes(damage);
+                    return (
+                      <label
+                        key={damage}
+                        className={`flex items-center gap-3 rounded-md border p-3 cursor-pointer text-sm font-medium transition-colors ${
+                          checked
+                            ? "border-primary/50 bg-primary/5 text-foreground"
+                            : "border-border bg-card hover:bg-muted/50 text-muted-foreground"
+                        }`}
+                      >
+                        <Checkbox
+                          checked={checked}
+                          onCheckedChange={() => toggleDamage(damage)}
+                        />
+                        <span>{damage}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Additional Damage Notes */}
+              <Field label="Additional damage notes">
+                <Input
+                  value={form.damageNotes ?? ""}
+                  onChange={(event) => update("damageNotes", event.target.value)}
+                  placeholder="e.g. Dent on top-right chassis corner; small hairline scratch on display"
+                />
+              </Field>
+
+              {/* Prior Repair History Textarea */}
+              <Field label="Prior device & repair history">
+                <Textarea
+                  value={form.priorHistory ?? ""}
+                  onChange={(event) => update("priorHistory", event.target.value)}
+                  placeholder="e.g. Motherboard serviced in 2023; refurbished battery installed by previous owner; water damage repaired in 2024"
+                  rows={3}
+                />
+              </Field>
             </div>
           </section>
+
+          <section className="rounded-md border border-border bg-card p-5 sm:p-7">
+            <h2 className="text-base font-semibold">
+              Device photos <span className="text-xs font-normal text-muted-foreground">(optional)</span>
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Upload existing photos or take a photo of the device for the intake record.
+            </p>
+
+            <input
+              type="file"
+              accept="image/*"
+              capture="environment"
+              multiple
+              id="owner-photo-upload"
+              className="hidden"
+              onChange={handlePhotoUpload}
+            />
+
+            <div className="mt-4 flex flex-wrap gap-2">
+              <label htmlFor="owner-photo-upload" className="cursor-pointer">
+                <Button type="button" variant="outline" asChild>
+                  <span>
+                    <Upload className="size-4" /> Upload from files
+                  </span>
+                </Button>
+              </label>
+              <label htmlFor="owner-photo-upload" className="cursor-pointer">
+                <Button type="button" variant="outline" asChild>
+                  <span>
+                    <Camera className="size-4" /> Take photo
+                  </span>
+                </Button>
+              </label>
+            </div>
+
+            {form.ownerPhotos && form.ownerPhotos.length > 0 && (
+              <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-4">
+                {form.ownerPhotos.map((url, index) => (
+                  <div key={index} className="relative aspect-square overflow-hidden rounded-md border border-border">
+                    <img src={url} alt={`Device photo ${index + 1}`} className="h-full w-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => removePhoto(index)}
+                      aria-label={`Remove device photo ${index + 1}`}
+                      className="absolute right-1 top-1 grid size-6 place-items-center rounded-full bg-background/80 text-foreground shadow-sm backdrop-blur transition-colors hover:bg-destructive hover:text-destructive-foreground"
+                    >
+                      <X className="size-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+
+          {error && <p role="alert" className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2.5 text-sm font-medium text-destructive">{error}</p>}
+
+          <div className="flex flex-wrap justify-end gap-2 pt-1">
+            <Link to="/"><Button type="button" variant="outline">Cancel</Button></Link>
+            <Button type="submit">Create passport</Button>
+          </div>
         </form>
       )}
     </AppShell>

@@ -1,0 +1,40 @@
+server:
+  port: 8080
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/retechdb}
+    username: ${DB_USER:retech}
+    password: ${DB_PASSWORD:retech123}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  mail:
+    host: ${MAIL_HOST:}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 10MB
+retech:
+  base-url: ${RETECH_BASE_URL:http://localhost:5173}
+  ai-service-url: ${AI_SERVICE_URL:http://localhost:8000}
+  jwt:
+    secret: ${JWT_SECRET:cmV0ZWNoUGFzc3BvcnRTdXBlclNlY3JldEtleTIwMjZYWVphYmMhQEAjJCVeJioo}
+    expiration-ms: 86400000
+  storage:
+    upload-dir: ${STORAGE_UPLOAD_DIR:./storage/uploads}
+    qr-dir: ${STORAGE_QR_DIR:./storage/qr}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health

@@ -18,7 +18,7 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as DevicesIdRouteImport } from './routes/devices.$id'
 import { Route as DevicesNewRouteImport } from './routes/devices.new'
 import { Route as PTokenRouteImport } from './routes/p.$token'
-import { Route as DevicesIdQrRouteImport } from './routes/devices.$id.qr'
+import { Route as DevicesIdQrRouteImport } from './routes/devices.$id_.qr'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -66,9 +66,9 @@ const PTokenRoute = PTokenRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const DevicesIdQrRoute = DevicesIdQrRouteImport.update({
-  id: '/qr',
-  path: '/qr',
-  getParentRoute: () => DevicesIdRoute,
+  id: '/devices/$id_/qr',
+  path: '/devices/$id/qr',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -78,7 +78,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof ProfileRoute
   '/scan': typeof ScanRoute
   '/signup': typeof SignupRoute
-  '/devices/$id': typeof DevicesIdRouteWithChildren
+  '/devices/$id': typeof DevicesIdRoute
   '/devices/new': typeof DevicesNewRoute
   '/p/$token': typeof PTokenRoute
   '/devices/$id/qr': typeof DevicesIdQrRoute
@@ -90,7 +90,7 @@ export interface FileRoutesByTo {
   '/profile': typeof ProfileRoute
   '/scan': typeof ScanRoute
   '/signup': typeof SignupRoute
-  '/devices/$id': typeof DevicesIdRouteWithChildren
+  '/devices/$id': typeof DevicesIdRoute
   '/devices/new': typeof DevicesNewRoute
   '/p/$token': typeof PTokenRoute
   '/devices/$id/qr': typeof DevicesIdQrRoute
@@ -103,10 +103,10 @@ export interface FileRoutesById {
   '/profile': typeof ProfileRoute
   '/scan': typeof ScanRoute
   '/signup': typeof SignupRoute
-  '/devices/$id': typeof DevicesIdRouteWithChildren
+  '/devices/$id': typeof DevicesIdRoute
   '/devices/new': typeof DevicesNewRoute
   '/p/$token': typeof PTokenRoute
-  '/devices/$id/qr': typeof DevicesIdQrRoute
+  '/devices/$id_/qr': typeof DevicesIdQrRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -144,7 +144,7 @@ export interface FileRouteTypes {
     | '/devices/$id'
     | '/devices/new'
     | '/p/$token'
-    | '/devices/$id/qr'
+    | '/devices/$id_/qr'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -154,9 +154,10 @@ export interface RootRouteChildren {
   ProfileRoute: typeof ProfileRoute
   ScanRoute: typeof ScanRoute
   SignupRoute: typeof SignupRoute
-  DevicesIdRoute: typeof DevicesIdRouteWithChildren
+  DevicesIdRoute: typeof DevicesIdRoute
   DevicesNewRoute: typeof DevicesNewRoute
   PTokenRoute: typeof PTokenRoute
+  DevicesIdQrRoute: typeof DevicesIdQrRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -224,27 +225,15 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/devices/$id/qr': {
-      id: '/devices/$id/qr'
-      path: '/qr'
+    '/devices/$id_/qr': {
+      id: '/devices/$id_/qr'
+      path: '/devices/$id/qr'
       fullPath: '/devices/$id/qr'
       preLoaderRoute: typeof DevicesIdQrRouteImport
-      parentRoute: typeof DevicesIdRoute
+      parentRoute: typeof rootRouteImport
     }
   }
 }
-
-interface DevicesIdRouteChildren {
-  DevicesIdQrRoute: typeof DevicesIdQrRoute
-}
-
-const DevicesIdRouteChildren: DevicesIdRouteChildren = {
-  DevicesIdQrRoute: DevicesIdQrRoute,
-}
-
-const DevicesIdRouteWithChildren = DevicesIdRoute._addFileChildren(
-  DevicesIdRouteChildren,
-)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -253,9 +242,10 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileRoute: ProfileRoute,
   ScanRoute: ScanRoute,
   SignupRoute: SignupRoute,
-  DevicesIdRoute: DevicesIdRouteWithChildren,
+  DevicesIdRoute: DevicesIdRoute,
   DevicesNewRoute: DevicesNewRoute,
   PTokenRoute: PTokenRoute,
+  DevicesIdQrRoute: DevicesIdQrRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

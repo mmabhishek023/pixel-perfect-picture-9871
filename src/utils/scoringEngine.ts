@@ -28,7 +28,9 @@ function gradeFor(score: number): Grade {
 
 export function calculateAssessment(device: DevicePassport, now = new Date()): DeviceAssessment {
   const fullYearsSincePurchase = fullYearsBetween(device.purchaseDate, now);
-  const activeComponents = device.components.filter((component) => component.active);
+  const allComponents = device.components ?? [];
+  const allRepairs = device.repairs ?? [];
+  const activeComponents = allComponents.filter((component) => component.active);
   const battery = activeComponents.find((component) => component.type === "BATTERY");
   const countPoorComponents = activeComponents.filter(
     (component) => component.condition === "POOR",
@@ -36,7 +38,7 @@ export function calculateAssessment(device: DevicePassport, now = new Date()): D
   const countFairComponents = activeComponents.filter(
     (component) => component.condition === "FAIR",
   ).length;
-  const replacedCritical = device.components.filter(
+  const replacedCritical = allComponents.filter(
     (component) => criticalTypes.includes(component.type) && component.origin === "REPLACED",
   );
   const poorCriticalCount = activeComponents.filter(
@@ -46,15 +48,27 @@ export function calculateAssessment(device: DevicePassport, now = new Date()): D
     (component) => component.condition === "POOR",
   ).length;
 
+  const DAMAGE_DEDUCTIONS: Record<string, number> = {
+    'Water/Liquid Damage': 25,
+    'Battery Swelling/Drain': 20,
+    'Screen Crack': 15,
+    'Port/Charging Issue': 12,
+    'Camera/Speaker Fault': 10,
+    'Body Dents/Scratches': 5,
+  };
+
   const dAge = Math.min(30, 5 * fullYearsSincePurchase);
-  const dRep = Math.min(20, 4 * device.repairs.length);
+  const dRep = Math.min(20, 4 * allRepairs.length);
   const dBat =
     battery?.batteryHealth !== null && battery?.batteryHealth !== undefined && battery.batteryHealth < 80
       ? Math.min(20, 0.5 * (80 - battery.batteryHealth))
       : 0;
   const dCmp = Math.min(20, 5 * countPoorComponents + 2 * countFairComponents);
   const dCrit = Math.min(10, 5 * replacedCritical.length);
-  const score = Math.max(0, Math.round(100 - (dAge + dRep + dBat + dCmp + dCrit)));
+  const activeDamages = device.activeDamages ?? [];
+  const dDamages = activeDamages.reduce((sum, dmg) => sum + (DAMAGE_DEDUCTIONS[dmg] ?? 0), 0);
+  const dPrevOwners = Math.min(6, (device.previousOwnersCount ?? 0) * 2);
+  const score = Math.min(100, Math.max(0, Math.round(100 - (dAge + dRep + dBat + dCmp + dCrit + dDamages + dPrevOwners))));
   const grade = gradeFor(score);
   const criticalFailures = Math.max(poorCriticalCount, poorReplacedCriticalCount);
   let recommendation: DeviceAssessment["recommendation"];
@@ -105,6 +119,14 @@ export function calculateAssessment(device: DevicePassport, now = new Date()): D
       value: dCrit,
       reason: `Critical replacements: ${replacedCritical.length} display or motherboard (-${dCrit} pts)`,
     },
+    ...activeDamages.map((dmg) => ({
+      value: DAMAGE_DEDUCTIONS[dmg] ?? 0,
+      reason: `Active damage: ${dmg} (\u2212${DAMAGE_DEDUCTIONS[dmg] ?? 0} pts)`,
+    })),
+    {
+      value: dPrevOwners,
+      reason: `Previous owners: ${device.previousOwnersCount ?? 0} (\u2212${dPrevOwners} pts)`,
+    },
   ];
   const reasons = factors
     .filter((factor) => factor.value > 0)
@@ -117,7 +139,7 @@ export function calculateAssessment(device: DevicePassport, now = new Date()): D
     grade,
     recommendation,
     fullYearsSincePurchase,
-    deductions: { age: dAge, repairs: dRep, battery: dBat, components: dCmp, critical: dCrit },
+    deductions: { age: dAge, repairs: dRep, battery: dBat, components: dCmp, critical: dCrit, damages: dDamages, previousOwners: dPrevOwners },
     reasons,
     countPoorComponents,
     criticalFailures,

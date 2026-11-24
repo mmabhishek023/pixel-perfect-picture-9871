@@ -14,4 +14,20 @@ describe("App routing", () => {
 
     expect(matches.at(-1)?.routeId).not.toBe(rootRouteId);
   });
+
+  it("correctly matches /devices/:id/qr to the dedicated QR leaf route", () => {
+    const router = createRouter({ routeTree, context: { queryClient: new QueryClient() } });
+
+    const matches = router.matchRoutes("/devices/device-118/qr");
+
+    expect(matches.at(-1)?.routeId).toBe("/devices/$id_/qr");
+  });
+
+  it("correctly matches /devices/new for device registration", () => {
+    const router = createRouter({ routeTree, context: { queryClient: new QueryClient() } });
+
+    const matches = router.matchRoutes("/devices/new");
+
+    expect(matches.at(-1)?.routeId).toBe("/devices/new");
+  });
 });
